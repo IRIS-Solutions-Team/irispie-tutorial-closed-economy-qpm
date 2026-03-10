@@ -1,20 +1,21 @@
 ## QPM style closed economy model
 
 
-!transition-variables
+!transition_variables
+
+    y_gap
+    rs
+    ad_cpi
+    cpi
 
     y
     y_tnd
     ad_y_tnd
-    y_gap
     Y
 
-    cpi
-    ad_cpi
     d4_cpi
     E_ad_cpi
 
-    rs
     rs_unc
     rrs
     rrs_tnd
@@ -22,17 +23,17 @@
     mpr
 
 
-!anticipated-shocks
+# !anticipated_shocks
+# 
+#     ant_shk_ad_y_tnd
+#     ant_shk_y_gap
+#     ant_shk_ad_cpi
+#     ant_shk_E_ad_cpi
+#     ant_shk_rs
+#     ant_shk_rrs_tnd
 
-    ant_shk_ad_y_tnd
-    ant_shk_y_gap
-    ant_shk_ad_cpi
-    ant_shk_E_ad_cpi
-    ant_shk_rs
-    ant_shk_rrs_tnd
 
-
-!unanticipated-shocks
+!transition_shocks
 
     shk_ad_y_tnd
     shk_y_gap
@@ -64,12 +65,12 @@
     c0_rrs_tnd
 
 
-!log-variables
+!log_variables
 
     Y
 
 
-!transition-equations
+!transition_equations
 
     y = y_tnd + y_gap;
 
@@ -78,13 +79,12 @@
     ad_y_tnd = ...
         + c0_ad_y_tnd * ad_y_tnd[-1] ...
         + (1 - c0_ad_y_tnd) * ss_ad_y ...
-        + ant_shk_ad_y_tnd + shk_ad_y_tnd ...
+        + shk_ad_y_tnd ...
     !! ad_y_tnd = ss_ad_y;
 
     y_gap = ...
         + c0_y_gap * y_gap[-1] ...
         - c1_y_gap * rrs_gap ...
-        + ant_shk_y_gap ...
         + shk_y_gap ...
     !! y_gap = 0;
 
@@ -92,7 +92,6 @@
         + c0_ad_cpi * ad_cpi[-1] ...
         + (1 - c0_ad_cpi) * E_ad_cpi ...
         + c1_ad_cpi * y_gap ...
-        + ant_shk_ad_cpi ...
         + shk_ad_cpi ...
     !! ad_cpi = ss_ad_cpi;
 
@@ -100,14 +99,12 @@
         + c1_E_ad_cpi * ad_cpi[+1] ...
         + (1 - c1_E_ad_cpi) * ss_ad_cpi ...
         + shk_E_ad_cpi ...
-        + ant_shk_E_ad_cpi ...
         + c2_E_ad_cpi * (rs - rs_unc) ...
     !! E_ad_cpi = ss_ad_cpi;
 
     rs_unc = ...
         + c0_rs * rs[-1] ...
         + (1 - c0_rs)*(ss_rrs + ss_ad_cpi + mpr) ...
-        + ant_shk_rs ...
         + shk_rs ...
     !! rs_unc = ss_rrs + ss_ad_cpi;
 
@@ -122,7 +119,6 @@
     rrs_tnd = ...
         + c0_rrs_tnd * rrs_tnd[-1] ...
         + (1 - c0_rrs_tnd) * ss_rrs ...
-        + ant_shk_rrs_tnd ...
         + shk_rrs_tnd ...
     !! rrs_tnd = ss_rrs;
 
@@ -133,39 +129,43 @@
     y = 100*log(Y);
 
 
-!measurement-variables
+!measurement_variables
 
     obs_y
     obs_ad_y
-    obs_Y
     obs_y_gap
     obs_y_gap4
     obs_rs
     obs_cpi
     obs_ad_cpi
 
-
-!log-variables
-
-    obs_Y
+    #obs_Y
 
 
-!measurement-shocks
+# !log_variables
+
+    # obs_Y
+
+
+!measurement_shocks
 
     shk_obs_y
     shk_obs_cpi
 
 
-!measurement-equations
+!measurement_equations
 
     obs_y = y + shk_obs_y;
     obs_cpi = cpi + shk_obs_cpi;
+    # obs_y = y;
+    # obs_cpi = cpi;
     obs_rs = rs;
 
     obs_ad_y = 4 * diff(y);
     obs_y_gap = y_gap;
     obs_y_gap4 = y_gap[-4];
     obs_ad_cpi = ad_cpi;
-    obs_Y = Y;
+
+    # obs_Y = Y;
 
 

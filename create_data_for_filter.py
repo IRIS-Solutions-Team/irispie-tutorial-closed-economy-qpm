@@ -10,7 +10,7 @@ np.random.seed(0)
 fred_db = ir.Databox.from_csv(
     "data_files/fred_data.csv",
     description_row=True,
-    date_creator=ir.Period.from_iso_string,
+    period_from_string=ir.Period.from_iso_string,
 )
 
 hist_db = ir.Databox()

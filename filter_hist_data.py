@@ -1,5 +1,6 @@
 
 import irispie as ir
+import sys
 
 m = ir.Simultaneous.from_pickle_file("model.pkl", )
 
@@ -9,7 +10,7 @@ m.assign(
     std_shk_obs_cpi=1,
 )
 m.check_steady()
-m.solve()
+m.solve_first_order()
 
 hist_db = ir.Databox.from_csv("hist_data.csv", )
 
@@ -35,15 +36,25 @@ std_db = ir.Databox(
 
 tv_stds = m.vary_stds(
     multiplier_db=multiplier_db,
-    std_db=std_db,
+    #std_db=std_db,
+    std_db=None,
     span=filt_span,
 )
 
-filt_db, info = m.kalman_filter(
+filt_db, info, = m.kalman_filter(
     obs_db, filt_span,
     return_info=True,
     rescale_variance=True,
 )
+s0 = filt_db["smooth_med"]
+
+filt_db, info, = m.kalman_filter(
+    obs_db, filt_span,
+    return_info=True,
+    rescale_variance=True,
+    prepend_initial=True,
+)
+s1 = filt_db["smooth_med"]
 
 s = filt_db["smooth_med"]
 
@@ -53,7 +64,9 @@ tv_filt_db, tv_info = m.kalman_filter(
     rescale_variance=True,
     stds_from_data=True,
 )
+
 tv_s = tv_filt_db["smooth_med"]
+
 
 std_scale = info["std_scale"]
 m_rescaled = m.copy()

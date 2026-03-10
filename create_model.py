@@ -47,21 +47,23 @@ def main() -> ir.Simultaneous:
 
     ## Calculate steady state
 
-    m.steady()
+    m.solve_steady()
     m.check_steady()
     print(m.get_steady_levels(round=4, ), )
 
     ## Calculate first-order solution matrices
 
-    m.solve()
+    m.solve_first_order()
 
-    m.to_json_file("model.json", indent=4, )
+
+    ## Save model object to pickle file
+
     m.to_pickle_file("model.pkl", )
-    ir.save_pickle(m, "model_2.pkl", )
 
     return m
 
 
 if __name__ == "__main__":
+
     m = main()
 

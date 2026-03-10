@@ -10,7 +10,7 @@ start_sim = ir.ii(1)
 end_sim = ir.ii(5)
 sim_span = start_sim >> end_sim
 
-d0 = ir.Databox.steady(m, sim_span, )
+d0 = m.build_steady_paths(sim_span, )
 
 # d1 = d0.copy()
 # d1["shk_y_gap"][start_sim>>start_sim+1] = (1, 2, )
@@ -36,7 +36,9 @@ s3, info3 = m.simulate(d3, sim_span, plan=p3, return_info=True, num_variants=2, 
 f00 = info3[0]["frame_databoxes"][0]
 f01 = info3[0]["frame_databoxes"][1]
 f11 = info3[1]["frame_databoxes"][0]
-f = ir.Databox.merged((f00, f01, f11, ))
+f = ir.Databox.by_merging((f00, f01, f11, ))
+
+sys.exit()
 
 d4 = d3.copy()
 p4 = p3.copy()
