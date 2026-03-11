@@ -10,11 +10,11 @@ import file_structure as fs
 model = ir.Simultaneous.from_pickle_file(fs.MODEL_PICKLE_FILE, )
 filter_db = ir.Databox.from_csv_file(fs.FILTER_DATA_FILE, )
 
-history_end = ir.qq(2022,4)
+history_end = ir.qq(2025,4)
 forecast_start = history_end + 1
 forecast_end = history_end + 4*4
 forecast_span = forecast_start >> forecast_end
-chart_span = forecast_start-12 >> forecast_end
+chart_span = forecast_start-4*10 >> forecast_end
 
 steady_db = model.build_steady_paths(chart_span, )
 

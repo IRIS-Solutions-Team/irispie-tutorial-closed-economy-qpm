@@ -20,20 +20,57 @@ model.check_steady()
 model.solve_first_order()
 
 
-hist_db = ir.Databox.from_csv("hist_data.csv", )
+historical_db = ir.Databox.from_csv(fs.HISTORICAL_DATA_FILE, )
 
-obs_db = hist_db.copy(
+obs_db = historical_db.copy(
     source_names=("y", "rs", "cpi", ),
     target_names=lambda n: f"obs_{n}",
 )
 
 start_filt = ir.qq(2010,1)
-end_filt = ir.qq(2022,4)
+# end_filt = ir.qq(2022,4)
+end_filt = ir.qq(2025,4)
 filter_span = start_filt >> end_filt
+
+kalman_db, info, = model.kalman_filter(
+    obs_db, filter_span,
+    return_info=True,
+    rescale_variance=True,
+)
+
+
+s = kalman_db["smooth_med"]
+s["filter_span"] = ir.Series(periods=filter_span, values=1, )
+s.to_csv_file(fs.FILTER_DATA_FILE, )
+
+
+ch = ir.Chartpack(
+    tiles=(2, 2),
+    span=filter_span,
+    show_legend=False,
+)
+
+f = ch.add_figure("Kalman filter", )
+f.add_charts([
+    "Output: y | y_tnd",
+    "Output gap: y_gap",
+    "Real interest rate: rrs | rrs_tnd",
+    "Real interest rate gap: rrs_gap",
+])
+
+ch.plot(s, )
+
+
+sys.exit()
+
+
+
+
 
 multiplier_db = ir.Databox(
     std_shk_obs_cpi=ir.Series(periods=ir.qq(2022,1)>>ir.qq(2022,4), values=0, )
 )
+
 
 std_db = ir.Databox(
     std_shk_rs=10,
@@ -46,18 +83,6 @@ tv_stds = model.vary_stds(
     std_db=None,
     span=filter_span,
 )
-
-kalman_db, info, = model.kalman_filter(
-    obs_db, filter_span,
-    return_info=True,
-    rescale_variance=True,
-)
-
-s0 = kalman_db["smooth_med"]
-s0["filter_span"] = ir.Series(periods=filter_span, values=1, )
-s0.to_csv_file(fs.FILTER_DATA_FILE, )
-
-sys.exit()
 
 
 filt_db, info, = model.kalman_filter(

@@ -77,6 +77,7 @@
 
 * Extremely extensive ecosystem of packages
 
-* A couple of gotchas: no scripts, assignment by reference, etc.
+* A couple of gotchas: no scripts, assignment by reference, functions vs
+  methods, 
 
 
