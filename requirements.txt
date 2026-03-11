@@ -1,0 +1,4 @@
+irispie >= 0.79.3
+macrotap >= 0.3.0
+ipython
+

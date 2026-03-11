@@ -1,69 +1,81 @@
-#%% Create model object from source file
+r"""
+Create and parameterize a model object from the source file
+"""
 
-import irispie as ir
+
 import json
+import irispie as ir
+import file_structure as fs
 
 
-def main() -> ir.Simultaneous:
-
-    m = ir.Simultaneous.from_file(
-        "closed_economy_qpm.model",
-        linear=False,
-    )
-
-    ## Assign parameters
-
-    parameters = ir.Databox(
-        ss_rrs=0.5,
-        ss_ad_cpi=2,
-        ss_ad_y=1.5,
-        c0_y_gap=0.75,
-        c1_y_gap=0.10,
-        c0_ad_cpi=0.55,
-        c1_ad_cpi=0.10,
-        c1_E_ad_cpi=1,
-        c2_E_ad_cpi=0.1,
-        c0_rs=0.75,
-        c0_rrs_tnd=0.95,
-        c1_mpr=4,
-        c0_ad_y_tnd=0.95,
-
-        std_shk_ad_y_tnd=3,
-        std_shk_y_gap=1.0,
-        std_shk_ad_cpi=2.0,
-        std_shk_rs=0.3,
-        std_shk_E_ad_cpi=0.1,
-        std_shk_rrs_tnd=0.1,
-
-        std_shk_obs_y=0.2,
-        std_shk_obs_cpi=0.2,
-    )
-    parameters.set_description("Closed economy QPM model parameters", )
-
-    print(parameters, )
-    m.assign_strict(parameters, )
-    ir.save_json(parameters, "parameters.json", )
+model = ir.Simultaneous.from_file(
+    "closed_economy_qpm.model",
+    linear=False,
+    flat=False,
+)
 
 
-    ## Calculate steady state
+# Assign parameters
 
-    m.solve_steady()
-    m.check_steady()
-    print(m.get_steady_levels(round=4, ), )
+parameters = ir.Databox(
+    # Steady-state parameteres
+    ss_rrs=0,
+    ss_ad_cpi=2,
+    ss_ad_y=1.5,
 
-    ## Calculate first-order solution matrices
+    # Dynamic parameters
+    c0_y_gap=0.75,
+    c1_y_gap=0.10,
+    c0_ad_cpi=0.55,
+    c1_ad_cpi=0.10,
+    c1_ad_cpi_ste=1,
+    c2_ad_cpi_ste=0.1,
+    c0_rs=0.75,
+    c0_rrs_tnd=0.95,
+    c1_mpr=4,
+    c0_ad_y_tnd=0.95,
 
-    m.solve_first_order()
+    # Stds for shocks
+    std_shk_ad_y_tnd=3,
+    std_shk_y_gap=1.0,
+    std_shk_ad_cpi=2.0,
+    std_shk_rs=0.3,
+    std_shk_ad_cpi_ste=0.1,
+    std_shk_rrs_tnd=0.5,
+
+    # Stds for measurement errors
+    std_shk_obs_y=0,
+    std_shk_obs_cpi=0,
+    std_shk_obs_rs=0,
+)
+
+print(parameters, )
+model.assign_strict(parameters, )
+ir.save_json(parameters, fs.PARAMETERS_FILE, )
 
 
-    ## Save model object to pickle file
+# Calculate steady state
 
-    m.to_pickle_file("model.pkl", )
+plan = ir.SteadyPlan(model, )
 
-    return m
+plan.fix_level("y", )
+model.assign_strict(y=1, )
+
+plan.fix_level("cpi", )
+model.assign_strict(cpi=1, )
+
+model.solve_steady(plan=plan, )
+model.check_steady()
+
+print(model.create_steady_table(round_to=4, ), )
 
 
-if __name__ == "__main__":
+# Calculate first-order solution matrices
 
-    m = main()
+model.solve_first_order()
+
+
+# Save model object to pickle file
+
+model.to_pickle_file(fs.MODEL_PICKLE_FILE, )
 
