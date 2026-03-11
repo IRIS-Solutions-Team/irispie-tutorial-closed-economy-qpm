@@ -1,30 +1,33 @@
+r"""
+Simulate a demand shock that drive the nominal rate to the zero floor
+"""
 
-import sys
+
 import irispie as ir
-
-MODEL_PICKLE_FILE = "model.pkl"
-
-m = ir.Simultaneous.from_pickle_file(MODEL_PICKLE_FILE, )
+import file_structure as fs
 
 
-start_sim = ir.ii(1)
-end_sim = ir.ii(40)
-sim_span = start_sim >> end_sim
-chart_span = start_sim-1 >> end_sim
+m = ir.Simultaneous.from_pickle_file(fs.MODEL_PICKLE_FILE, )
 
-d = m.build_steady_paths(sim_span, )
-d["shk_y_gap"][start_sim >> start_sim+3] = -2
+
+simulation_start = ir.ii(1)
+simulation_end = ir.ii(40)
+simulation_span = simulation_start >> simulation_end
+chart_span = simulation_start-1 >> simulation_end
+
+d = m.build_steady_paths(simulation_span, )
+d["shk_y_gap"][simulation_start >> simulation_start+3] = -2
 
 s0, info0 = m.simulate(
-    d, sim_span,
+    d, simulation_span,
     return_info=True,
 )
 
 s1, info1 = m.simulate(
-    d, sim_span,
+    d, simulation_span,
     return_info=True,
     method="stacked_time",
-    solver_settings={"step_tolerance": 1, },
+    solver_settings={"step_tolerance": 100, },
 )
 
 s = ir.Databox.by_merging((s0, s1), )
