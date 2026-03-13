@@ -18,6 +18,25 @@ fcast_db = model.simulate(
     db, fcast_span,
 )
 
+# Keep policy flat
+# * Create a simulation plan
+# * Exogenize rs in the first 4 quarters
+# * Endogenize shk_rs in the first 4 quarters
+# * Create the rs path for the first 4 quarters in the input databox
+
+p = ir.SimulationPlan(model, fcast_span)
+p.exogenize_unanticipated(fcast_start >> fcast_start+3, "rs")
+p.endogenize_unanticipated(fcast_start >> fcast_start+3, "shk_rs")
+
+db["rs"][fcast_start >> fcast_start+3] = db["rs"][hist_end]
+
+fcast_db1 = model.simulate(
+    db, fcast_span,
+    plan=p,
+)
+
+chart_db = ir.Databox.by_merging([fcast_db, fcast_db1])
+
 # Chart results
 
 ch = ir.Chartpack(
@@ -33,4 +52,4 @@ f.add_chart("Output gap: y_gap")
 f.add_chart("Output, Q/Q PA: ad_y")
 f.add_chart("Real interest rate: rrs")
 
-ch.plot(fcast_db)
+ch.plot(chart_db)
