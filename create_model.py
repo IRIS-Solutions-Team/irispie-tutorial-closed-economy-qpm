@@ -50,7 +50,7 @@ parameters = ir.Databox(
 )
 
 print(parameters, )
-model.assign_strict(parameters, )
+model.assign(parameters, )
 ir.save_json(parameters, fs.PARAMETERS_FILE, )
 
 
@@ -76,6 +76,5 @@ model.solve_first_order()
 
 
 # Save model object to pickle file
-
 model.to_pickle_file(fs.MODEL_PICKLE_FILE, )
 
